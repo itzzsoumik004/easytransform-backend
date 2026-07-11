@@ -5,6 +5,7 @@ const { Document, Packer, Paragraph } = require("docx");
 const mammoth = require("mammoth");
 const html_to_pdf = require("html-pdf-node");
 const PDFMerger = require("pdf-merger-js").default;
+const sharp = require("sharp");
 const { exec } = require("child_process");
 
 // ======================
