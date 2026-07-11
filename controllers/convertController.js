@@ -12,7 +12,6 @@ const { exec } = require("child_process");
 // ======================
 exports.imageToPdf = async (req, res) => {
   try {
-
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({
         success: false,
@@ -23,16 +22,12 @@ exports.imageToPdf = async (req, res) => {
     const pdfDoc = await PDFDocument.create();
 
     for (const file of req.files) {
+      // Convert every image to PNG first
+      const pngBuffer = await sharp(file.path)
+        .png()
+        .toBuffer();
 
-      const imageBytes = fs.readFileSync(file.path);
-
-      let image;
-
-      if (file.mimetype === "image/png") {
-        image = await pdfDoc.embedPng(imageBytes);
-      } else {
-        image = await pdfDoc.embedJpg(imageBytes);
-      }
+      const image = await pdfDoc.embedPng(pngBuffer);
 
       const page = pdfDoc.addPage([
         image.width,
@@ -45,7 +40,6 @@ exports.imageToPdf = async (req, res) => {
         width: image.width,
         height: image.height,
       });
-
     }
 
     const pdfBytes = await pdfDoc.save();
@@ -57,22 +51,20 @@ exports.imageToPdf = async (req, res) => {
       pdfBytes
     );
 
-   res.json({
-  success: true,
-  file: `/uploads/pdfs/${fileName}`,
-});
-  } catch (err) {
+    res.json({
+      success: true,
+      file: `/uploads/pdfs/${fileName}`,
+    });
 
-    console.log(err);
+  } catch (err) {
+    console.error(err);
 
     res.status(500).json({
       success: false,
       message: err.message,
     });
-
   }
 };
-
 // ======================
 // PDF TO WORD
 // ======================
